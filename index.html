@@ -1,0 +1,298 @@
+<html>
+   <head>
+   	<title>Trang điều khiển</title>
+   	<meta charset="utf-8">
+   	<title>JavaScript MQTT WebSocket Example</title>
+   	<meta name="viewport" content="width=device-width, initial-scale=1">
+   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+   	<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript">
+	 </script>
+	 <script type = "text/javascript" language = "javascript">
+	 	var max,at_OK;
+	    function makeid() 
+	    {
+		  var text = "";
+		  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+		  for (var i = 0; i < 5; i++)
+		    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+		  return text;
+		}
+	 	// Create a client instance
+		var client = new Paho.MQTT.Client("broker.hivemq.com", 8000, makeid());
+
+		// set callback handlers
+		client.onConnectionLost = onConnectionLost;
+		client.onMessageArrived = onMessageArrived;
+
+		var options = {
+		    useSSL: false,
+		    userName: "",
+		    password: "",
+		    onSuccess:onConnect,
+		    onFailure:doFail
+		 }
+
+		// connect the client
+		client.connect(options);
+
+		 function doFail(e){
+		    console.log(e);
+		 }
+
+
+		// called when the client connects
+		function onConnect() {
+		  // Once a connection has been made, make a subscription and send a message.
+		  console.log("Connect OK");
+		  client.subscribe("doan_espOL"); //đăng kí kênh để nhận dữ liệu cài đặt
+		  client.subscribe("doan_espSET"); //đăng kí kênh để nhận dữ liệu cài đặt
+		  client.subscribe("doan_espOF"); //đăng kí kênh để nhận bản tin esp đã of
+		  client.subscribe("doan_espCB"); //đăng kí kênh để nhận dữ liệu cảm biến
+		  client.subscribe("doan_espAT"); //đăng kí kênh để nhận dữ liệu auto
+		  client.subscribe("doan_espST"); //đăng kí kênh để nhận dữ liệu trạng thái của relay
+
+          guidulieu("doan_espR","SET???");
+		}
+
+		// called when the client loses its connection
+		function onConnectionLost(responseObject) {
+		  if (responseObject.errorCode !== 0) {
+		    console.log(responseObject.errorMessage);
+		  }
+		}
+
+		// called when a message arrives
+		function onMessageArrived(message) {
+		  console.log(message.destinationName + ":" +message.payloadString);
+		  if(message.destinationName=="doan_espSET")
+		  {
+             $("#cd1").html("Cài đặt: " + message.payloadString + "%");
+             max=parseInt(message.payloadString);
+             $("#dk").html("Điều khiển - Online");
+             $("#load").html("");
+		  }
+		  else if(message.destinationName=="doan_espOL")
+		  {
+             $("#dk").html("Điều khiển - Online");
+             $("#load").html("");
+		  }
+		  else if(message.destinationName=="doan_espOF")
+		  {
+             $("#dk").html("Điều khiển - Offline");
+		  }
+		  else if(message.destinationName=="doan_espCB")
+		  {
+            $("#tt1").html("Độ ẩm: " + message.payloadString + "%");
+		  }
+		  else if(message.destinationName=="doan_espAT")
+		  {
+             at_OK=parseInt(message.payloadString);
+             if(at_OK==1)$("#at1").css("background-color", "#18aa8d");
+             else $("#at1").css("background-color", "#d03e3e");
+		  }
+		  else if(message.destinationName=="doan_espST")
+		  {
+             if(message.payloadString=="1")$("#anh4").html("<img src=\"https://www.upsieutoc.com/images/2018/12/04/bat.png\">");
+             else $("#anh4").html("<img src=\"https://www.upsieutoc.com/images/2018/12/04/tat.png\">");
+		  }
+		}
+		function guidulieu(topic,data)
+          {
+            message = new Paho.MQTT.Message(data);
+            message.destinationName = topic;
+            client.send(message);
+          }
+</script>
+<style type="text/css">
+           body
+           {
+           	cursor: url("https://1.bp.blogspot.com/-4mmhSat2Gxs/T4B658DoZhI/AAAAAAAAAus/p4dmDOXXxEc/s1600/heartagrampurple.gif"),auto;
+           }
+           #thantrang
+           {
+				width: 280px;
+				height: 350px;
+				margin: auto;
+				padding-top: 70px;
+           }
+           #item1
+           {
+				width: 290px;
+				height: 170px;
+				border-radius: 10px;
+				border: red solid 2px;
+				float: left;
+           }
+           .tieude
+           {
+           	height: 20px;
+           	padding-top: 5px;
+           	padding-left: 10px;
+           	padding-bottom: 5px;
+           	color: #FFF; 
+           	background-color: red;
+           	border-top-right-radius: 10px;
+           	border-top-left-radius: 10px;
+           }
+           .tieude_text
+           {
+               float: left;
+           }
+           .text
+           {
+              padding-left:20px;
+              font-size:20px;
+              margin:0;
+              margin-top:5px;
+           }
+           .anh
+           {
+              float: right;
+           }
+           .btn_min
+           {
+           	  margin-top: 10px;
+           	  cursor: url("https://4.bp.blogspot.com/-hGXkYeQBgRk/T4B67pLJ9pI/AAAAAAAAAu4/J-Zxvhy1krg/s1600/heartagramyellow.gif"),auto;
+              padding:5px;
+              padding-right: 15px;
+              padding-left: 15px;
+              border-radius: 7px;
+              background-color: #18aa8d;
+              color: #FFF; 
+              outline:none;
+              font-size: 15px;
+           }
+           .btn
+           {
+           	  margin-right: 15px;
+           	  margin-left: 15px;
+           	  margin-top: 10px;
+           	  cursor: url("https://4.bp.blogspot.com/-hGXkYeQBgRk/T4B67pLJ9pI/AAAAAAAAAu4/J-Zxvhy1krg/s1600/heartagramyellow.gif"),auto;
+              padding:5px;
+              padding-right: 40px;
+              padding-left: 40px;
+              border-radius: 7px;
+              background-color: #18aa8d;
+              color: #FFF; 
+              outline:none;
+              font-size: 20px;
+           }
+           #bt_auto
+           {
+           	  cursor: url("https://4.bp.blogspot.com/-hGXkYeQBgRk/T4B67pLJ9pI/AAAAAAAAAu4/J-Zxvhy1krg/s1600/heartagramyellow.gif"),auto;
+              padding:5px;
+              padding-right: 40px;
+              padding-left: 40px;
+              border-radius: 7px;
+              background-color: #18aa8d;
+              color: #FFF; 
+              outline:none;
+
+           }
+           .hengio
+           {
+           	margin-top: 10px;
+           	margin-left: 15px;
+           	height: 25px;
+           }
+           .div_caidat
+           {
+           	  float: left;
+           	  width: 200px;
+           	  margin-top:20px;
+           }
+           .bt_caidat
+           {
+           	  margin-top:25px;
+           	  cursor: pointer;
+           }
+    	@media only screen and (max-width: 768px){
+		    #thantrang
+		    {
+		        width: 300px;
+		        height: 450px;
+		    }
+		    #item1
+            {
+           	 float: none;
+            }
+		}
+    </style>
+     <script type="text/javascript">
+     	function sendmax() 
+	    {
+          var dat;
+      	     if(max<10)dat="00" + max.toString();
+      	 else if(max<100)dat="0" + max.toString();
+      	 else dat="100";
+       	 guidulieu("doan_espR","MAX:" + dat);
+      	 console.log(dat);
+	    }
+     	$(document).ready(function() {
+     		      $('#bat1').click(function() {
+                     if(at_OK==1)
+                     {
+                        alert("Vui lòng tắt chế độ auto để điều khiển tay");
+                     }
+                     else
+                     { 
+                        guidulieu("doan_espR","RLON");
+                        $("#anh4").html("<img src=\"https://www.upsieutoc.com/images/2018/12/04/bat.png\">");
+
+                     }
+     		      });  
+     		      $('#tat1').click(function() {
+     		      	 if(at_OK==1)
+                     {
+                        alert("Vui lòng tắt chế độ auto để điều khiển tay");
+                     }
+                     else
+                     {
+                         guidulieu("doan_espR","RLOFF");
+                         $("#anh4").html("<img src=\"https://www.upsieutoc.com/images/2018/12/04/tat.png\">");
+                     }
+     		      });  
+     		      $('#at1').click(function() {
+     		      	 at_OK=1-at_OK
+     		      	 if(at_OK==1){$("#at1").css("background-color", "#18aa8d");guidulieu("doan_espR","AON");}
+                     else {$("#at1").css("background-color", "#d03e3e");guidulieu("doan_espR","AOF");}
+     		      });
+     		      $('#tang1').click(function() {
+     		      	if(max<100){max++;sendmax();$("#cd1").html("Cài đặt: " + max.toString() + "%");}
+     		      	else alert("Không thể cài quá 100%");
+     		      });
+     		      $('#giam1').click(function() {
+     		      	if(max>0){max--;sendmax();$("#cd1").html("Cài đặt: " + max.toString() + "%");}
+     		      	else alert("Không thể cài dưới 0%");
+     		      });
+     		 });
+     </script>
+</head>
+<body>
+  <h2 align="center" style="background: red;color: #FFF;padding-top: 20px;padding-bottom: 20px;">Hệ thống điều khiển giám sát độ ẩm đất</h2>
+  <div id="thantrang">   
+     <p id="load" align="center">Đang kết nối ...</p>  
+     <div id="item1">
+         <div class="tieude"> <div class="tieude_text"> <span id="dk">Điều khiển - Offline</span> </div> <div class="anh" id="anh4"><img src="https://www.upsieutoc.com/images/2018/12/04/tat.png">  </div></div>
+         <div style="margin-left: 20px">
+	         <button id="bat1" class="btn_min" style="margin-left:20px;">Bật</button>
+	         <button id="tat1" class="btn_min" style="background-color: #d03e3e">Tắt
+	         </button>
+	         <button id="at1" class="btn_min" style="background-color: #d03e3e">Auto
+	         </button>
+         </div>
+         <div class="div_caidat">
+	          <p id="tt1" class="text" >-------</p>
+	          <p id="cd1" class="text" >-------</p>
+         </div>
+         <div class="bt_caidat" >
+             <div style="padding-top:20px"></div>
+             <img src="https://www.upsieutoc.com/images/2019/11/20/tang.png" width="30px" heigh="30px" id="tang1">
+             <img src="https://www.upsieutoc.com/images/2019/11/20/giam.png" width="30px" heigh="30px" id="giam1">
+         </div>
+     </div>
+  </div>
+</body>
+</html>
